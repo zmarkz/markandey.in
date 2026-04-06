@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap");
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+}
+
+:root {
+  /* Core */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a2e;
+  --bg-terminal: #0d1117;
+
+  /* Text */
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-terminal: #7ee787;
+
+  /* Accent */
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  --accent-green: #22c55e;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.1));
+  --gradient-text: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+
+  /* Terminal */
+  --terminal-cursor: #7ee787;
+  --terminal-prompt: #79c0ff;
+  --terminal-output: #e4e4e7;
+  --terminal-system: #f59e0b;
+  --terminal-border: #30363d;
+
+  --background: #0a0a0f;
+  --foreground: #e4e4e7;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #52525b #27272a;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

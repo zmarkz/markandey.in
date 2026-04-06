@@ -1,0 +1,30 @@
+---
+title: "Building an MCP Agent Farm from Scratch"
+date: "2026-01-20"
+tags: ["ai", "mcp", "agents", "architecture"]
+summary: "A technical deep-dive on building an agent orchestration system with templates, tool routing, and streaming responses."
+---
+
+The Model Context Protocol (MCP) is a standard for giving AI models access to tools. I built an Agent Farm — an orchestration layer that manages multiple AI agent templates, each with different models, system prompts, and tool configurations.
+
+## Architecture
+
+The farm has three layers:
+
+1. **Gateway**: Receives requests, authenticates consumers, routes to the right agent template
+2. **Agent Workers**: Execute tasks using configured LLM providers (Anthropic, Ollama) with tool access
+3. **Queue**: BullMQ for async task management, retry logic, and rate limiting
+
+Each agent template defines: which model to use, what system prompt to inject, which MCP tools are available, and how to format the response.
+
+## Template System
+
+Templates are the key abstraction. Template 3 (Claude Sonnet) handles complex portfolio analysis with structured JSON output. Template 4 (Qwen local) handles simple queries with streaming markdown. Template 5 powers this website's chat agent.
+
+The beauty is in the separation: the application doesn't know or care which model it's talking to. It sends a query with a template ID and gets back a response. Swap models, change prompts, add tools — all without touching application code.
+
+## Lessons Learned
+
+- **Streaming is non-negotiable**: Users need to see tokens appearing. A 5-second wait for a complete response feels like infinity.
+- **Fallbacks matter**: When Ollama is down, the system needs to degrade gracefully, not crash.
+- **Cost logging is essential**: Every query logs its routing decision, response time, and estimated cost. You can't optimize what you can't measure.

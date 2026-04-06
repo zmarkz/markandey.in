@@ -1,0 +1,19 @@
+{
+  "name": "markandey-in",
+  "displayName": "markandey.in — Personal Website",
+  "type": "fullstack",
+  "status": "active",
+  "stack": ["nextjs", "react", "typescript", "tailwindcss", "ollama", "qwen"],
+  "port": 5175,
+  "database": {
+    "type": "none",
+    "name": null
+  },
+  "docker": {
+    "service": "markandey-in",
+    "dockerfile": "Dockerfile"
+  },
+  "keywords": ["personal", "website", "markandey", "portfolio", "ai-chat", "terminal"],
+  "dependencies": ["mcp-farm"],
+  "repository": "https://github.com/markandey/markandey.in"
+}

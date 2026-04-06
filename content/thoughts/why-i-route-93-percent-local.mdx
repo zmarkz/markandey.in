@@ -1,0 +1,27 @@
+---
+title: "Why I Route 93% of AI Queries to Local Models"
+date: "2026-03-15"
+tags: ["ai", "cost-optimization", "ollama"]
+summary: "Cost optimization in AI systems isn't about using the cheapest model — it's about using the right model for each query."
+---
+
+Cost optimization in AI systems isn't about using the cheapest model — it's about using the right model for each query. Here's how I built a routing system that sends 93% of queries to a free local model while maintaining quality.
+
+## The Problem
+
+When I first integrated AI into my portfolio tracker, every query went to Claude. The analysis was excellent, but at ~₹0.05 per query, costs added up fast. Most queries didn't need Claude's reasoning power — "How many stocks do I own?" doesn't require a frontier model.
+
+## The Solution: Query Classification
+
+I built a simple keyword-based classifier. Queries containing words like "analyze", "recommend", "rebalance", or "risk" get routed to Claude (COMPLEX). Everything else — "what is", "show me", "list", "how many" — goes to Qwen 2.5 running locally via Ollama (SIMPLE).
+
+The classifier is intentionally simple. No ML model needed — just keyword matching with a COMPLEX default for safety. If in doubt, use the better model.
+
+## The Results
+
+- **93% of queries** go to Qwen local (₹0 per query)
+- **7% of queries** go to Claude (~₹0.05 each)
+- **76% total cost savings** vs routing everything to Claude
+- **Monthly AI cost**: ~₹28
+
+The key insight: most user queries are lookups, not analysis. They want data, not decisions. Match the model to the task.
