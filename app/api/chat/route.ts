@@ -13,6 +13,12 @@ interface KnowledgeResult {
 }
 
 async function fetchRelevantContext(query: string): Promise<string> {
+  // Skip RAG for very short/greeting messages — they don't need context
+  const trimmed = query.trim().toLowerCase();
+  if (trimmed.length < 10 || /^(hi|hey|hello|sup|yo|namaste|hola|what's up|howdy)\b/.test(trimmed)) {
+    return "";
+  }
+
   try {
     const res = await fetch(`${KNOWLEDGE_STORE_URL}/query`, {
       method: "POST",
@@ -106,6 +112,7 @@ export async function POST(request: NextRequest) {
             for (const line of lines) {
               if (line.startsWith("data: ")) {
                 const token = line.slice(6);
+                if (token === "[DONE]" || token.trim() === "") continue;
                 streamController.enqueue(
                   encoder.encode(
                     `data: ${JSON.stringify({ token })}\n\n`

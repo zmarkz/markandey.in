@@ -54,16 +54,18 @@ export function useTerminalChat() {
               if (data === "[DONE]") continue;
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.token) {
+                if (parsed.token && parsed.token !== "[DONE]") {
                   fullResponse += parsed.token;
                   onToken(parsed.token);
                 } else if (parsed.error) {
                   onError(parsed.error);
                 }
               } catch {
-                // Not JSON, treat as raw token
-                fullResponse += data;
-                onToken(data);
+                // Not JSON — skip if it looks like a control message
+                if (data && data !== "[DONE]") {
+                  fullResponse += data;
+                  onToken(data);
+                }
               }
             }
           }
