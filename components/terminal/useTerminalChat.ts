@@ -76,7 +76,7 @@ export function useTerminalChat() {
         onDone();
       } catch {
         onError(
-          "The AI is taking a nap 😴 Try one of the built-in commands (type 'help'), or come back later!"
+          "AI is offline right now. But I can still help — try these:\n\n  about     → Who I am\n  career    → My journey so far\n  skills    → What I work with\n  projects  → Things I've built\n  contact   → Get in touch\n  lab       → Interactive AI demos"
         );
       } finally {
         setIsStreaming(false);

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       start(controller) {
         controller.enqueue(
           encoder.encode(
-            `data: ${JSON.stringify({ token: "AI agent is currently offline. Try one of the built-in commands — type 'help' to see them!" })}\n\n`
+            `data: ${JSON.stringify({ token: "AI is offline right now. But I can still help — try these:\n\n  about     → Who I am\n  career    → My journey so far\n  skills    → What I work with\n  projects  → Things I've built\n  contact   → Get in touch\n  lab       → Interactive AI demos" })}\n\n`
           )
         );
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
