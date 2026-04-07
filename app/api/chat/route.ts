@@ -3,6 +3,48 @@ import { NextRequest } from "next/server";
 const AGENT_FARM_URL = process.env.AGENT_FARM_URL || "http://localhost:8082";
 const AGENT_TEMPLATE_ID = process.env.AGENT_TEMPLATE_ID || "5";
 const AGENT_FARM_KEY = process.env.AGENT_FARM_KEY || "admin-secret";
+const KNOWLEDGE_STORE_URL =
+  process.env.KNOWLEDGE_STORE_URL || "http://localhost:3010";
+
+interface KnowledgeResult {
+  title: string;
+  content: string;
+  similarity: number;
+}
+
+async function fetchRelevantContext(query: string): Promise<string> {
+  try {
+    const res = await fetch(`${KNOWLEDGE_STORE_URL}/query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query,
+        appId: "markandey-in",
+        limit: 3,
+      }),
+      signal: AbortSignal.timeout(3000),
+    });
+
+    if (!res.ok) return "";
+
+    const data = await res.json();
+    if (!data.results || data.results.length === 0) return "";
+
+    const contextBlocks = data.results
+      .filter((r: KnowledgeResult) => r.similarity > 0.3)
+      .map(
+        (r: KnowledgeResult) =>
+          `[${r.title}]: ${r.content.slice(0, 500)}`
+      )
+      .join("\n\n");
+
+    if (!contextBlocks) return "";
+
+    return `\n\nRELEVANT CONTEXT FROM KNOWLEDGE BASE:\n${contextBlocks}\n\nUse the above context to answer if relevant. If not relevant, ignore it.`;
+  } catch {
+    return "";
+  }
+}
 
 export async function POST(request: NextRequest) {
   const { message, history } = await request.json();
@@ -11,6 +53,9 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Message is required" }, { status: 400 });
   }
 
+  // Pre-fetch relevant context from Knowledge Store (RAG)
+  const knowledgeContext = await fetchRelevantContext(message);
+
   // Build context from history for the input prompt
   const contextLines = (history || [])
     .slice(-10)
@@ -18,7 +63,7 @@ export async function POST(request: NextRequest) {
       m.role === "user" ? `User: ${m.content}` : `Assistant: ${m.content}`
     );
   contextLines.push(`User: ${message}`);
-  const inputPrompt = contextLines.join("\n");
+  const inputPrompt = contextLines.join("\n") + knowledgeContext;
 
   try {
     const controller = new AbortController();
