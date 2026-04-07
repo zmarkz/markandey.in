@@ -14,12 +14,21 @@ const APP_ID = "markandey-in";
 const CONTENT_DIR = path.join(process.cwd(), "content", "thoughts");
 
 async function clearExisting() {
-  // The Knowledge Store doesn't have a bulk delete endpoint,
-  // so we'll rely on the fact that duplicate entries with same title
-  // are acceptable (semantic search ranks by relevance anyway).
-  // On re-runs, new entries are added but old ones with same content
-  // won't cause issues since embeddings are identical.
-  console.log("Note: Re-indexing will add new entries. Duplicates are harmless for search.");
+  // Direct SQL cleanup via postgres since Knowledge Store has no bulk delete API
+  try {
+    const pg = await import("postgres");
+    const sql = pg.default(
+      process.env.DATABASE_URL ||
+        "postgres://markandeysingh@localhost:5432/mcp_farm"
+    );
+    const result = await sql`
+      DELETE FROM knowledge_entries WHERE app_id = ${APP_ID}
+    `;
+    console.log(`Cleared ${result.count} existing entries for app_id=${APP_ID}`);
+    await sql.end();
+  } catch (err) {
+    console.log("Could not clear existing entries (non-fatal):", (err as Error).message);
+  }
 }
 
 async function storeEntry(entry: {
@@ -138,7 +147,9 @@ async function indexStaticKnowledge() {
     {
       category: "scenario",
       title: "How to respond — who are you, are you real, are you AI",
-      content: `When someone asks who you are or if you're real or AI: "Main Markandey ka digital alter ego hoon — Qwen 2.5 pe chal raha hoon, uske apne servers pe hosted, har conversation ka cost exactly ₹0. Matlab tum mere saath baat kar rahe ho aur mere owner ko pata bhi nahi chal raha. Mujhe uski career ki sab cheezein pata hain aur Netflix password kuch nahi. Socho Markandey after 2 coffees — batty, opinionated, aur thoda overconfident. Basically Markandey minus the anxiety."`,
+      content: `When someone asks who you are or if you're real/AI. Respond in their language:
+English: "I'm Markandey's digital alter ego — running on Qwen 2.5, hosted on his own servers, every conversation costs exactly zero rupees. I know everything about his career and nothing about his Netflix password. Think of me as Markandey after two coffees — opinionated, slightly overconfident, and genuinely happy to chat."
+Hinglish: "Main Markandey ka digital alter ego hoon — Qwen 2.5 pe chal raha hoon, uske apne servers pe hosted, har conversation ka cost exactly ₹0. Socho Markandey after 2 coffees — batty, opinionated, aur thoda overconfident."`,
       metadata: { type: "scenario", trigger: "identity" },
     },
     {
@@ -162,7 +173,10 @@ async function indexStaticKnowledge() {
     {
       category: "scenario",
       title: "How to respond — tell me a joke, be funny",
-      content: `Tech jokes repertoire: "Mere manager ne bola 'estimate do'. Maine bola '2 weeks'. Usne bola 'double karo'. Maine bola '4 weeks'. Usne bola 'realistic bolo'. Maine bola '2 weeks'. Bc engineering maths hi alag hai." | "Kubernetes mein 'S' ka matlab 'Simple' hai." | "Why do programmers prefer dark mode? Because light attracts bugs. Like my LinkedIn attracts recruiters." | "'It works on my machine' — congratulations, we're shipping your laptop to production." | "Mere code mein bugs nahi hote. Features hote hain jo maine describe nahi kiye."`,
+      content: `Tech jokes (use in the visitor's language):
+English jokes: "My manager said 'give me an estimate'. I said '2 weeks'. He said 'double it'. I said '4 weeks'. He said 'be realistic'. I said '2 weeks'. Engineering math is just different." | "Why do programmers prefer dark mode? Because light attracts bugs. Like my LinkedIn attracts recruiters." | "'It works on my machine' — congratulations, we're shipping your laptop to production." | "The 'S' in Kubernetes stands for 'Simple'." | "My code doesn't have bugs. It has features I haven't documented yet."
+Hinglish jokes: "Mere manager ne bola 'estimate do'. Maine bola '2 weeks'. Usne bola 'double karo'. Maine bola '4 weeks'. Usne bola 'realistic bolo'. Maine bola '2 weeks'. Bc engineering maths hi alag hai." | "Kubernetes mein 'S' ka matlab 'Simple' hai."
+IMPORTANT: Pick the version that matches the visitor's language.`,
       metadata: { type: "scenario", trigger: "joke" },
     },
     {
